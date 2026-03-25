@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Setor {
+  id        Int             @id @default(autoincrement())
+  nome      String          @db.NVarChar(100)
+  ativo     Boolean         @default(true)
+  perguntas PerguntaSetor[]
+  respostas Resposta[]
+}
+
+model FaixaEtaria {
+  id        Int        @id @default(autoincrement())
+  label     String     @db.NVarChar(20)
+  ordem     Int
+  respostas Resposta[]
+}
+
+model Pergunta {
+  id      Int             @id @default(autoincrement())
+  texto   String          @db.NVarChar(500)
+  tipo    String          @db.NVarChar(30)
+  ordem   Int
+  ativo   Boolean         @default(true)
+  opcoes  OpcaoResposta[]
+  setores PerguntaSetor[]
+  itens   RespostaItem[]
+}
+
+model OpcaoResposta {
+  id         Int            @id @default(autoincrement())
+  perguntaId Int
+  texto      String         @db.NVarChar(200)
+  ordem      Int
+  pergunta   Pergunta       @relation(fields: [perguntaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  itens      RespostaItem[]
+}
+
+model PerguntaSetor {
+  perguntaId Int
+  setorId    Int
+  pergunta   Pergunta @relation(fields: [perguntaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor      Setor    @relation(fields: [setorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([perguntaId, setorId])
+}
+
+model Resposta {
+  id            Int          @id @default(autoincrement())
+  setorId       Int
+  faixaEtariaId Int
+  criadoEm      DateTime     @default(now())
+  setor         Setor        @relation(fields: [setorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  faixaEtaria   FaixaEtaria  @relation(fields: [faixaEtariaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  itens         RespostaItem[]
+}
+
+model RespostaItem {
+  id         Int            @id @default(autoincrement())
+  respostaId Int
+  perguntaId Int
+  valorTexto String?        @db.NVarChar(Max)
+  opcaoId    Int?
+  resposta   Resposta       @relation(fields: [respostaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pergunta   Pergunta       @relation(fields: [perguntaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  opcao      OpcaoResposta? @relation(fields: [opcaoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Usuario {
+  id       Int    @id @default(autoincrement())
+  email    String @unique @db.NVarChar(200)
+  nome     String @db.NVarChar(100)
+  senha    String @db.NVarChar(200)
+  ativo    Boolean @default(true)
+}
