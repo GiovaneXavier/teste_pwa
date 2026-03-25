@@ -1,0 +1,85 @@
+// Schema para desenvolvimento local com SQLite
+// Produção usa: prisma/schema.prisma (SQL Server)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Setor {
+  id        Int             @id @default(autoincrement())
+  nome      String
+  ativo     Boolean         @default(true)
+  perguntas PerguntaSetor[]
+  respostas Resposta[]
+}
+
+model FaixaEtaria {
+  id        Int        @id @default(autoincrement())
+  label     String
+  ordem     Int
+  respostas Resposta[]
+}
+
+model Pergunta {
+  id      Int             @id @default(autoincrement())
+  texto   String
+  tipo    String
+  ordem   Int
+  ativo   Boolean         @default(true)
+  opcoes  OpcaoResposta[]
+  setores PerguntaSetor[]
+  itens   RespostaItem[]
+}
+
+model OpcaoResposta {
+  id         Int            @id @default(autoincrement())
+  perguntaId Int
+  texto      String
+  ordem      Int
+  pergunta   Pergunta       @relation(fields: [perguntaId], references: [id])
+  itens      RespostaItem[]
+}
+
+model PerguntaSetor {
+  perguntaId Int
+  setorId    Int
+  pergunta   Pergunta @relation(fields: [perguntaId], references: [id])
+  setor      Setor    @relation(fields: [setorId], references: [id])
+
+  @@id([perguntaId, setorId])
+}
+
+model Resposta {
+  id            Int            @id @default(autoincrement())
+  setorId       Int
+  faixaEtariaId Int
+  criadoEm      DateTime       @default(now())
+  setor         Setor          @relation(fields: [setorId], references: [id])
+  faixaEtaria   FaixaEtaria    @relation(fields: [faixaEtariaId], references: [id])
+  itens         RespostaItem[]
+}
+
+model RespostaItem {
+  id         Int            @id @default(autoincrement())
+  respostaId Int
+  perguntaId Int
+  valorTexto String?
+  opcaoId    Int?
+  resposta   Resposta       @relation(fields: [respostaId], references: [id])
+  pergunta   Pergunta       @relation(fields: [perguntaId], references: [id])
+  opcao      OpcaoResposta? @relation(fields: [opcaoId], references: [id])
+}
+
+model Usuario {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  nome  String
+  senha String
+  ativo Boolean @default(true)
+}

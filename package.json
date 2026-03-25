@@ -9,7 +9,9 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "dev:setup": "prisma db push --schema=prisma/schema.dev.prisma && tsx prisma/seed.ts",
+    "dev:studio": "prisma studio --schema=prisma/schema.dev.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
